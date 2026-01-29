@@ -1,12 +1,17 @@
 package com.example.TodoApp.service;
 
+import com.example.TodoApp.dto.TodoRequestDto;
+import com.example.TodoApp.dto.TodoResponseDto;
 import com.example.TodoApp.entity.Todo;
-import com.example.TodoApp.exception.TodoNotFoundException;
+import com.example.TodoApp.exception.ResourceNotFoundException;
+import com.example.TodoApp.mapper.TodoMapper;
 import com.example.TodoApp.repository.TodoRepository;
-import com.example.TodoApp.service.TodoService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class TodoImpleService implements TodoService {
@@ -18,40 +23,43 @@ public class TodoImpleService implements TodoService {
         this.todoRepository = todoRepository;
     }
     @Override
-    public Todo createTodo(Todo todo){
-        return todoRepository.save(todo);
+    public TodoResponseDto createTodo(TodoRequestDto dto){
+        Todo todo = TodoMapper.todoEntity(dto);
+        return TodoMapper.todoResponseDto(todoRepository.save(todo));
     }
     @Override
-    public List<Todo> getAllTodos(){
-        return todoRepository.findAll();
+    public List<TodoResponseDto> getAllTodos(){
+        return todoRepository.findAll()
+                .stream()
+                .map(TodoMapper :: todoResponseDto)
+                .collect(Collectors.toList());
+    }
+    @Override
+    public TodoResponseDto getTodoById(Long id){
+        Todo todo =  todoRepository.findById(id).orElseThrow(()->new ResourceNotFoundException(id));
+        return TodoMapper.todoResponseDto(todo);
+    }
+    @Override
+    public TodoResponseDto updateStatus(Long id, Boolean status){
+        Todo updateStatusTodo = todoRepository.findById(id).orElseThrow(((()->new ResourceNotFoundException(id))));
+        updateStatusTodo.setCompleted(status);
+        todoRepository.save(updateStatusTodo);
+        return TodoMapper.todoResponseDto(updateStatusTodo);
+    }
 
-    }
-    @Override
-    public Todo getTodoById(Long id){
-        return todoRepository.findById(id).orElseThrow(()->new TodoNotFoundException(id));
-    }
-    @Override
-    public Todo updateStatus(Long id, Boolean status){
-        Todo updateStatusTodo = todoRepository.findById(id).isPresent() ? todoRepository.findById(id).get() : null;
-        if(updateStatusTodo != null){
-            updateStatusTodo.setCompleted(status);
-        }
-        return updateStatusTodo;
-    }
-
 
     @Override
-    public Todo updateTodo(Long id, Todo todo){
-        Todo updateTodo =   todoRepository.findById(id).orElseThrow(()->new TodoNotFoundException(id));
+    public TodoResponseDto updateTodo(Long id, TodoRequestDto todo){
+        Todo updateTodo =   todoRepository.findById(id).orElseThrow(()->new ResourceNotFoundException(id));
             updateTodo.setCompleted(todo.isCompleted());
             updateTodo.setTitle(todo.getTitle());
             updateTodo.setDescription(todo.getDescription());
             todoRepository.save(updateTodo);
-            return updateTodo;
+            return TodoMapper.todoResponseDto(updateTodo);
     }
     @Override
     public void deleteTodo(Long id){
-        todoRepository.findById(id).orElseThrow(()->new TodoNotFoundException(id));
+        todoRepository.findById(id).orElseThrow(()->new ResourceNotFoundException(id));
         todoRepository.deleteById(id);
     }
 }

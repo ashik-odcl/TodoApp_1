@@ -1,13 +1,15 @@
 package com.example.TodoApp.controller;
 
-import com.example.TodoApp.entity.Todo;
+import com.example.TodoApp.dto.TodoRequestDto;
+import com.example.TodoApp.dto.TodoResponseDto;
 import com.example.TodoApp.service.TodoService;
-import org.springframework.stereotype.Controller;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Controller
+@RestController
 public class TodoController {
     private final TodoService todoService;
 
@@ -25,26 +27,31 @@ public class TodoController {
 
     @PostMapping("/add")
     @ResponseBody
-    public Todo addTodo(@RequestBody Todo todo){
-        return todoService.createTodo(todo);
+    public ResponseEntity<TodoResponseDto> addTodo(@Valid  @RequestBody TodoRequestDto todo){
+        return ResponseEntity.status(201).body(todoService.createTodo(todo));
     }
 
     @GetMapping("/allTodo")
     @ResponseBody
-    public List<Todo> getAllTodos(){
+    public List<TodoResponseDto> getAllTodos(){
         return todoService.getAllTodos();
     }
 
+    @GetMapping("getTodo")
+    @ResponseBody
+    public TodoResponseDto getTodoById(@Valid @RequestParam Long id){
+        return todoService.getTodoById(id);
+    }
 
     @PutMapping("updateStatus")
     @ResponseBody
-    public Todo updateStatus(@RequestParam Long id,@RequestBody Boolean status){
+    public TodoResponseDto updateStatus(@RequestParam Long id,@Valid @RequestBody Boolean status){
         return todoService.updateStatus(id, status);
     }
 
     @PutMapping("updateTodo")
     @ResponseBody
-    public Todo updateTodo(@RequestParam Long id,@RequestBody Todo todo){
+    public TodoResponseDto updateTodo(@RequestParam Long id,@Valid @RequestBody TodoRequestDto todo){
         return todoService.updateTodo(id,todo);
     }
 
@@ -54,5 +61,6 @@ public class TodoController {
         todoService.deleteTodo(id);
         return true;
     }
+
 
 }
