@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public interface TodoService {
     TodoResponseDto createTodo(TodoRequestDto todo);
-    List<TodoResponseDto>  getAllTodos();
+    List<TodoResponseDto>  getAllTodos( int page,int size, String sortBy, String direction);
     TodoResponseDto getTodoById(Long id);
     TodoResponseDto updateStatus(Long id, Boolean status);
     TodoResponseDto updateTodo(Long id, TodoRequestDto todo);

@@ -33,8 +33,13 @@ public class TodoController {
 
     @GetMapping("/allTodo")
     @ResponseBody
-    public List<TodoResponseDto> getAllTodos(){
-        return todoService.getAllTodos();
+    public List<TodoResponseDto> getAllTodos(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "createdAt") String sort,
+            @RequestParam(defaultValue = "desc") String direction
+    ){
+        return todoService.getAllTodos(page,size,sort,direction);
     }
 
     @GetMapping("getTodo")

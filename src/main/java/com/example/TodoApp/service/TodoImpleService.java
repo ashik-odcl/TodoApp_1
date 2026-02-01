@@ -6,34 +6,42 @@ import com.example.TodoApp.entity.Todo;
 import com.example.TodoApp.exception.ResourceNotFoundException;
 import com.example.TodoApp.mapper.TodoMapper;
 import com.example.TodoApp.repository.TodoRepository;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class TodoImpleService implements TodoService {
-    private final TodoRepository todoRepository;
 
-    // this is constructor injection, here object is not created
-    // object is injected by spring boot
+    private final TodoRepository todoRepository;
     public TodoImpleService(TodoRepository todoRepository) {
         this.todoRepository = todoRepository;
     }
+
     @Override
     public TodoResponseDto createTodo(TodoRequestDto dto){
         Todo todo = TodoMapper.todoEntity(dto);
         return TodoMapper.todoResponseDto(todoRepository.save(todo));
     }
     @Override
-    public List<TodoResponseDto> getAllTodos(){
-        return todoRepository.findAll()
+    public List<TodoResponseDto> getAllTodos(int page,int size,  String sortBy, String direction){
+
+        Sort sort = direction.equalsIgnoreCase("desc")?
+                    Sort.by(sortBy).descending()
+                    : Sort.by(sortBy).ascending();
+
+        PageRequest  pageRequest = PageRequest.of(page, size, sort);
+
+        return todoRepository.findAll(pageRequest)
                 .stream()
                 .map(TodoMapper :: todoResponseDto)
                 .collect(Collectors.toList());
     }
+
     @Override
     public TodoResponseDto getTodoById(Long id){
         Todo todo =  todoRepository.findById(id).orElseThrow(()->new ResourceNotFoundException(id));
