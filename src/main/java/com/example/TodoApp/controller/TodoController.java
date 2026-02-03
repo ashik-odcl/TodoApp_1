@@ -28,6 +28,7 @@ public class TodoController {
     @PostMapping("/add")
     @ResponseBody
     public ResponseEntity<TodoResponseDto> addTodo(@Valid  @RequestBody TodoRequestDto todo){
+
         return ResponseEntity.status(201).body(todoService.createTodo(todo));
     }
 

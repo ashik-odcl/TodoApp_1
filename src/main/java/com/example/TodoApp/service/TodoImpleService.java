@@ -3,28 +3,47 @@ package com.example.TodoApp.service;
 import com.example.TodoApp.dto.TodoRequestDto;
 import com.example.TodoApp.dto.TodoResponseDto;
 import com.example.TodoApp.entity.Todo;
+import com.example.TodoApp.entity.User;
 import com.example.TodoApp.exception.ResourceNotFoundException;
 import com.example.TodoApp.mapper.TodoMapper;
 import com.example.TodoApp.repository.TodoRepository;
+import com.example.TodoApp.repository.UserRepository;
+import com.example.TodoApp.security.SecurityUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class TodoImpleService implements TodoService {
 
     private final TodoRepository todoRepository;
-    public TodoImpleService(TodoRepository todoRepository) {
+    private final UserRepository userRepository;
+    @Autowired
+    public TodoImpleService(TodoRepository todoRepository,UserRepository userRepository) {
         this.todoRepository = todoRepository;
+        this.userRepository = userRepository;
+    }
+
+    private User getCurrentUser(){
+        SecurityUtil securityUtil = new SecurityUtil();
+        String username = securityUtil.getCurrentUsername();
+        return userRepository.findByUsername(username).orElseThrow(()-> new RuntimeException("Username not found"));
     }
 
     @Override
     public TodoResponseDto createTodo(TodoRequestDto dto){
+        User user = getCurrentUser();
+
         Todo todo = TodoMapper.todoEntity(dto);
+        todo.setUser(user);
         return TodoMapper.todoResponseDto(todoRepository.save(todo));
     }
     @Override
