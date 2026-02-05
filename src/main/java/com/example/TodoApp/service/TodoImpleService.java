@@ -49,26 +49,29 @@ public class TodoImpleService implements TodoService {
     @Override
     public List<TodoResponseDto> getAllTodos(int page,int size,  String sortBy, String direction){
 
+        User user = getCurrentUser();
         Sort sort = direction.equalsIgnoreCase("desc")?
                     Sort.by(sortBy).descending()
                     : Sort.by(sortBy).ascending();
 
         PageRequest  pageRequest = PageRequest.of(page, size, sort);
 
-        return todoRepository.findAll(pageRequest)
-                .stream()
+        return todoRepository
+                .findByUser(user,pageRequest)
                 .map(TodoMapper :: todoResponseDto)
-                .collect(Collectors.toList());
+                .stream().toList();
     }
 
     @Override
     public TodoResponseDto getTodoById(Long id){
-        Todo todo =  todoRepository.findById(id).orElseThrow(()->new ResourceNotFoundException(id));
+        User user = getCurrentUser();
+        Todo todo =  todoRepository.findByIdAndUser(id,user).orElseThrow(()->new ResourceNotFoundException(id));
         return TodoMapper.todoResponseDto(todo);
     }
     @Override
     public TodoResponseDto updateStatus(Long id, Boolean status){
-        Todo updateStatusTodo = todoRepository.findById(id).orElseThrow(((()->new ResourceNotFoundException(id))));
+        User user = getCurrentUser();
+        Todo updateStatusTodo = todoRepository.findByIdAndUser(id,user).orElseThrow(((()->new ResourceNotFoundException(id))));
         updateStatusTodo.setCompleted(status);
         todoRepository.save(updateStatusTodo);
         return TodoMapper.todoResponseDto(updateStatusTodo);
@@ -77,7 +80,8 @@ public class TodoImpleService implements TodoService {
 
     @Override
     public TodoResponseDto updateTodo(Long id, TodoRequestDto todo){
-        Todo updateTodo =   todoRepository.findById(id).orElseThrow(()->new ResourceNotFoundException(id));
+        User user = getCurrentUser();
+        Todo updateTodo =   todoRepository.findByIdAndUser(id,user).orElseThrow(()->new ResourceNotFoundException(id));
             updateTodo.setCompleted(todo.isCompleted());
             updateTodo.setTitle(todo.getTitle());
             updateTodo.setDescription(todo.getDescription());
@@ -86,7 +90,8 @@ public class TodoImpleService implements TodoService {
     }
     @Override
     public void deleteTodo(Long id){
-        todoRepository.findById(id).orElseThrow(()->new ResourceNotFoundException(id));
+        User user = getCurrentUser();
+        todoRepository.findByIdAndUser(id,user).orElseThrow(()->new ResourceNotFoundException(id));
         todoRepository.deleteById(id);
     }
 }

@@ -13,6 +13,9 @@ public class User {
     private String username;
     @Column(nullable = false)
     private String password;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
 
 
     //getter setter method
@@ -29,5 +32,14 @@ public class User {
     }
     public void setUsername(String username) {
         this.username = username;
+    }
+    public Role getRole() {
+        return role;
+    }
+    public void setRole(Role role) {
+        this.role = role;
+    }
+    public Long getId() {
+        return id;
     }
 }

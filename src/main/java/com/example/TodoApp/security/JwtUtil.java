@@ -11,7 +11,7 @@ import java.util.Date;
 
 @Component
 public class JwtUtil {
-    private final String secret_key = "my_super_secure_jwt_secret_key_123456";
+    private final String secret_key = "a2NWKjahVXLkQPlBc8lRjSSz8pHcT274PfrjyIhl1Qh";
 
     private final Key key =
             Keys.hmacShaKeyFor(secret_key.getBytes());
